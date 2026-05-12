@@ -1,36 +1,109 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sneaker Drop
+
+A sealed-bid sneaker auction platform. Sellers list limited-edition sneakers, bidders submit blind bids — no live leaderboard, no sniping. The highest bid wins at close, revealed to everyone at the same moment.
+
+## How It Works
+
+- **Sealed bids** — your amount stays hidden from everyone, including the seller
+- **Bidder count only** — you see how many competitors, never what they bid
+- **Reveal at close** — winner and winning amount shown to all when the auction ends
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16 (App Router, TypeScript) |
+| Database | Supabase (managed Postgres) |
+| ORM | Prisma v7 |
+| Auth | NextAuth v4 (email + password) |
+| Styling | Tailwind CSS v4 |
+| Testing | Jest |
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- A [Supabase](https://supabase.com) project (free tier works)
+
+### Setup
+
+1. **Clone and install**
+
+```bash
+git clone https://bitbucket.org/emblaftdev/ai-development-pulina.git
+cd ai-development-pulina
+npm install
+```
+
+2. **Configure environment**
+
+```bash
+cp .env.example .env
+```
+
+Fill in `.env`:
+
+```
+DATABASE_URL="postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres"
+NEXTAUTH_SECRET="generate with: openssl rand -base64 32"
+NEXTAUTH_URL="http://localhost:3000"
+```
+
+Get your `DATABASE_URL` from: Supabase Dashboard → Connect → Direct → URI.
+
+3. **Run database migrations**
+
+```bash
+npx prisma migrate dev
+```
+
+4. **Start the dev server**
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Feature | Status |
+|---|---|
+| User registration & sign-in | ✅ Done |
+| Create listings (title, photo, price, closing time) | ✅ Done |
+| Browse listings with live countdown | ✅ Done |
+| Cancel listing (before any bids) | ✅ Done |
+| Listing detail page | ✅ Done |
+| Sealed bid submission | 🔜 In progress |
+| Bid reveal at close | 🔜 In progress |
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+app/
+├── api/
+│   ├── auth/          # NextAuth + signup endpoint
+│   └── listings/      # GET/POST listings, GET/DELETE listing by id
+├── auth/              # signin and signup pages
+├── listings/          # browse, create, and detail pages
+├── components/        # Navbar, CountdownTimer, CancelButton
+└── page.tsx           # landing page
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+lib/
+├── auth.ts            # NextAuth config
+└── prisma.ts          # Prisma client singleton
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+prisma/
+└── schema.prisma      # User + Listing models
+```
 
-## Deploy on Vercel
+## Running Tests
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm test
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Jira Project
+
+[AIEX — AISDLC Exercise](https://emblaftdev.atlassian.net/jira/software/projects/AIEX/boards)
