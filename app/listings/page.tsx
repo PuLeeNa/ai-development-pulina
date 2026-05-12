@@ -2,28 +2,24 @@
 import Link from "next/link"
 import Navbar from "@/app/components/Navbar"
 import CountdownTimer from "@/app/components/CountdownTimer"
-import { getBaseUrl } from "@/lib/base-url"
+import { prisma } from "@/lib/prisma"
 
-interface Listing {
-  id: string
-  title: string
-  photoUrl: string
-  startingPrice: number
-  closingTime: string
-  sellerId: string
-  createdAt: string
-}
-
-async function getListings(): Promise<Listing[]> {
-  const res = await fetch(`${getBaseUrl()}/api/listings`, {
-    cache: "no-store",
-  })
-  if (!res.ok) return []
-  return res.json()
-}
+export const dynamic = "force-dynamic"
 
 export default async function ListingsPage() {
-  const listings = await getListings()
+  const listings = await prisma.listing.findMany({
+    where: { cancelled: false },
+    orderBy: { closingTime: "asc" },
+    select: {
+      id: true,
+      title: true,
+      photoUrl: true,
+      startingPrice: true,
+      closingTime: true,
+      sellerId: true,
+      createdAt: true,
+    },
+  })
 
   return (
     <div className="min-h-screen bg-zinc-950">
@@ -62,7 +58,7 @@ export default async function ListingsPage() {
                 <div className="p-4 flex flex-col gap-2">
                   <h2 className="text-white font-semibold truncate">{listing.title}</h2>
                   <p className="text-amber-400 font-bold">${listing.startingPrice.toLocaleString()}</p>
-                  <CountdownTimer closingTime={listing.closingTime} />
+                  <CountdownTimer closingTime={listing.closingTime.toISOString()} />
                 </div>
               </Link>
             ))}

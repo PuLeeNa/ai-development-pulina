@@ -6,29 +6,9 @@ import { authOptions } from "@/lib/auth"
 import Navbar from "@/app/components/Navbar"
 import CountdownTimer from "@/app/components/CountdownTimer"
 import CancelButton from "@/app/components/CancelButton"
-import { getBaseUrl } from "@/lib/base-url"
+import { prisma } from "@/lib/prisma"
 
-interface Listing {
-  id: string
-  title: string
-  description: string
-  photoUrl: string
-  startingPrice: number
-  closingTime: string
-  cancelled: boolean
-  sellerId: string
-  seller: { username: string }
-  bidCount: number
-  createdAt: string
-}
-
-async function getListing(id: string): Promise<Listing | null> {
-  const res = await fetch(`${getBaseUrl()}/api/listings/${id}`, {
-    cache: "no-store",
-  })
-  if (!res.ok) return null
-  return res.json()
-}
+export const dynamic = "force-dynamic"
 
 export default async function ListingDetailPage({
   params,
@@ -38,7 +18,10 @@ export default async function ListingDetailPage({
   const { id } = await params
 
   const [listing, session] = await Promise.all([
-    getListing(id),
+    prisma.listing.findUnique({
+      where: { id },
+      include: { seller: { select: { username: true } } },
+    }),
     getServerSession(authOptions),
   ])
 
@@ -46,7 +29,9 @@ export default async function ListingDetailPage({
 
   const isSeller = session?.user?.id === listing.sellerId
   const isOpen = new Date(listing.closingTime) > new Date()
-  const canCancel = isSeller && listing.bidCount === 0 && isOpen
+  // bidCount is 0 until Bid model is added in AIEX-728
+  const bidCount = 0
+  const canCancel = isSeller && bidCount === 0 && isOpen
 
   return (
     <div className="min-h-screen bg-zinc-950">
@@ -69,7 +54,7 @@ export default async function ListingDetailPage({
           <div className="p-6 flex flex-col gap-4">
             <div className="flex items-start justify-between gap-4">
               <h1 className="text-2xl font-bold text-white">{listing.title}</h1>
-              <CountdownTimer closingTime={listing.closingTime} />
+              <CountdownTimer closingTime={listing.closingTime.toISOString()} />
             </div>
             <p className="text-zinc-400">{listing.description}</p>
             <div className="flex items-center gap-6 py-4 border-t border-zinc-800">
