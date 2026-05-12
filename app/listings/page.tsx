@@ -2,6 +2,7 @@
 import Link from "next/link"
 import Navbar from "@/app/components/Navbar"
 import CountdownTimer from "@/app/components/CountdownTimer"
+import { getBaseUrl } from "@/lib/base-url"
 
 interface Listing {
   id: string
@@ -14,7 +15,7 @@ interface Listing {
 }
 
 async function getListings(): Promise<Listing[]> {
-  const res = await fetch(`${process.env.NEXTAUTH_URL}/api/listings`, {
+  const res = await fetch(`${getBaseUrl()}/api/listings`, {
     cache: "no-store",
   })
   if (!res.ok) return []

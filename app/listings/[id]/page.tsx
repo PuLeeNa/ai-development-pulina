@@ -6,6 +6,7 @@ import { authOptions } from "@/lib/auth"
 import Navbar from "@/app/components/Navbar"
 import CountdownTimer from "@/app/components/CountdownTimer"
 import CancelButton from "@/app/components/CancelButton"
+import { getBaseUrl } from "@/lib/base-url"
 
 interface Listing {
   id: string
@@ -22,7 +23,7 @@ interface Listing {
 }
 
 async function getListing(id: string): Promise<Listing | null> {
-  const res = await fetch(`${process.env.NEXTAUTH_URL}/api/listings/${id}`, {
+  const res = await fetch(`${getBaseUrl()}/api/listings/${id}`, {
     cache: "no-store",
   })
   if (!res.ok) return null
