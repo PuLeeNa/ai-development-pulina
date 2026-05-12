@@ -4,11 +4,12 @@ import { getServerSession } from "next-auth"
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   const { prisma } = await import("@/lib/prisma")
   const listing = await prisma.listing.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: { seller: { select: { username: true } } },
   })
 
@@ -21,8 +22,9 @@ export async function GET(
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   const { authOptions } = await import("@/lib/auth")
   const session = await getServerSession(authOptions)
   if (!session?.user?.id)
@@ -30,7 +32,7 @@ export async function DELETE(
 
   const { prisma } = await import("@/lib/prisma")
   const listing = await prisma.listing.findUnique({
-    where: { id: params.id },
+    where: { id },
   })
 
   if (!listing)
@@ -45,7 +47,7 @@ export async function DELETE(
     return NextResponse.json({ error: "Cannot cancel a listing with bids" }, { status: 403 })
 
   await prisma.listing.update({
-    where: { id: params.id },
+    where: { id },
     data: { cancelled: true },
   })
 

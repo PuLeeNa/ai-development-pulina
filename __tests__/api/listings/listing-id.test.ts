@@ -21,7 +21,7 @@ jest.mock("next-auth", () => ({
 import { getServerSession } from "next-auth"
 const mockGetServerSession = getServerSession as jest.MockedFunction<typeof getServerSession>
 
-const params = { params: { id: "listing-1" } }
+const params = { params: Promise.resolve({ id: "listing-1" }) }
 
 const mockListing = {
   id: "listing-1",
