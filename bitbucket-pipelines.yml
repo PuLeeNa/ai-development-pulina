@@ -1,0 +1,30 @@
+image: node:20-alpine
+
+definitions:
+  caches:
+    npm: ~/.npm
+
+  steps:
+    - step: &test
+        name: Test
+        caches:
+          - npm
+        script:
+          - npm ci
+          - npx prisma generate
+          - npm test
+
+pipelines:
+  # Runs on every push to any branch
+  default:
+    - step: *test
+
+  # Runs on pull requests
+  pull-requests:
+    '**':
+      - step: *test
+
+  # Runs on push to master — tests must pass before Vercel deploys
+  branches:
+    master:
+      - step: *test
