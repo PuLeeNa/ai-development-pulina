@@ -1,3 +1,5 @@
+deployed URL - [https://ai-development-pulina.vercel.app](https://ai-development-pulina.vercel.app)
+
 # Sneaker Drop
 
 A sealed-bid sneaker auction platform. Sellers list limited-edition sneakers, bidders submit blind bids — no live leaderboard, no sniping. The highest bid wins at close, revealed to everyone at the same moment.
