@@ -1,0 +1,60 @@
+{
+  "repo": {
+    "provider": "bitbucket",
+    "workspace": "emblaftdev",
+    "slug": "ai-development-pulina",
+    "url": "https://bitbucket.org/emblaftdev/ai-development-pulina"
+  },
+  "tracker": {
+    "provider": "jira",
+    "jira": {
+      "siteUrl": "https://emblaftdev.atlassian.net",
+      "cloudId": "fb779f96-2443-4319-b441-63d66a63bbaf",
+      "projectKey": "AIEX",
+      "boardId": 251,
+      "customFields": {
+        "sprint": "customfield_10020",
+        "acceptanceCriteria": ""
+      },
+      "statuses": {
+        "toDo":     ["To Do"],
+        "inDev":    ["In Progress"],
+        "inReview": ["In Review"],
+        "done":     ["Done"],
+        "deployed": ["Deployed", "Released"]
+      },
+      "issueTypes": {
+        "epic":      { "jiraName": "Epic",    "summaryFormat": "{product-area}: {goal}" },
+        "userStory": { "jiraName": "Story",   "summaryFormat": "As a {role}, I want {goal} so that {benefit}" },
+        "task":      { "jiraName": "Task",    "summaryFormat": "{verb} {subject}" },
+        "bug":       { "jiraName": "Bug",     "summaryFormat": "[BUG] {component}: {symptom}" },
+        "subTask":   { "jiraName": "Subtask", "summaryFormat": "{verb} {subject}" }
+      }
+    }
+  },
+  "sprint": {
+    "namingPattern": "",
+    "durationWeeks": 2,
+    "goalFormat": ""
+  },
+  "masterBranch": "main",
+  "featureBranchFormat": "feature/{ISSUE_KEY}-{summary}",
+  "bugBranchFormat": "bugfix/{ISSUE_KEY}-{summary}",
+  "hotfixBranchFormat": "",
+  "releaseBranchFormat": "",
+  "commitMessageFormat": "{ISSUE_KEY}: {summary}",
+  "team": {
+    "lead":   [{ "displayName": "pulina", "accountId": "712020:45fa6089-a012-4d58-a955-caa37d030f9d" }],
+    "qa":     [{ "displayName": "pulina", "accountId": "712020:45fa6089-a012-4d58-a955-caa37d030f9d" }],
+    "ui":     [{ "displayName": "pulina", "accountId": "712020:45fa6089-a012-4d58-a955-caa37d030f9d" }],
+    "devops": [{ "displayName": "pulina", "accountId": "712020:45fa6089-a012-4d58-a955-caa37d030f9d" }],
+    "dev":    [{ "displayName": "pulina", "accountId": "712020:45fa6089-a012-4d58-a955-caa37d030f9d" }]
+  },
+  "teamsWebhookUrl": "",
+  "reviewSlaHours": 24,
+  "publicHolidays": [],
+  "reviewerMode": "dev",
+  "prSizeGateThreshold": 300,
+  "testCoverageThreshold": 80,
+  "publishThreshold": 60
+}
