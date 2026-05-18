@@ -89,6 +89,3 @@ All feature work follows a 9-phase AI-assisted workflow. Invoke the matching ski
 7. **CI**: every push runs install → prisma generate → tests; must pass before merge
 8. **PR wrap-up**: `/superpowers:finishing-a-development-branch` — verify tests, generate PR description, open PR
 9. **Deploy**: Vercel auto-deploys previews on every branch push; production on merge to master
-
-
-
