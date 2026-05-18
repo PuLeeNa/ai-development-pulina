@@ -28,16 +28,19 @@ export default async function ListingDetailPage({
 
   if (!listing || listing.cancelled) redirect("/listings")
 
-  const existingBid = session?.user?.id
-    ? await prisma.bid.findUnique({
-        where: { listingId_bidderId: { listingId: id, bidderId: session.user.id } },
-        select: { amount: true },
-      })
-    : null
-
   const isSeller = session?.user?.id === listing.sellerId
   const isOpen = new Date(listing.closingTime) > new Date()
-  const bidCount = await prisma.bid.count({ where: { listingId: id } })
+
+  const [existingBid, bidCount] = await Promise.all([
+    session?.user?.id
+      ? prisma.bid.findUnique({
+          where: { listingId_bidderId: { listingId: id, bidderId: session.user.id } },
+          select: { amount: true },
+        })
+      : Promise.resolve(null),
+    prisma.bid.count({ where: { listingId: id } }),
+  ])
+
   const canCancel = isSeller && bidCount === 0 && isOpen
 
   return (

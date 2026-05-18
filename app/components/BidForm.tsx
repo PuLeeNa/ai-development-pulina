@@ -65,7 +65,7 @@ export default function BidForm({ listingId, startingPrice, existingBid }: BidFo
         </div>
       </div>
       {error && (
-        <p className="text-red-400 bg-red-400/10 rounded-lg px-4 py-3 text-sm">{error}</p>
+        <p role="alert" className="text-red-400 bg-red-400/10 rounded-lg px-4 py-3 text-sm">{error}</p>
       )}
     </form>
   )
