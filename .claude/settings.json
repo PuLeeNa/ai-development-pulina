@@ -27,6 +27,14 @@
           {
             "type": "command",
             "if": "Bash(git commit*)",
+            "command": "branch=$(git branch --show-current) && if [ \"$branch\" = \"main\" ] || [ \"$branch\" = \"master\" ]; then echo \"Blocked: Cannot commit directly to '$branch'. Create a feature branch first (e.g. feature/AIEX-NNN-description).\"; exit 1; fi",
+            "shell": "bash",
+            "timeout": 5,
+            "statusMessage": "Checking branch..."
+          },
+          {
+            "type": "command",
+            "if": "Bash(git commit*)",
             "command": "npx tsc --noEmit && npm test",
             "shell": "bash",
             "timeout": 60,
