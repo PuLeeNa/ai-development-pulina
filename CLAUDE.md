@@ -67,6 +67,7 @@ __tests__/api/             # API route tests only — no component tests
 - **Session username**: `session.user.username` — mapped via `user.name` in JWT callback in `lib/auth.ts`
 - **Server-side fetch**: use `getBaseUrl()` from `@/lib/base-url` for absolute URLs in Server Components
 - **Route handler dynamic imports**: `lib/prisma` and `lib/auth` are imported with `await import(...)` inside handlers to avoid module init at build time
+- **Parallel Prisma queries in Server Components**: use `Promise.all([queryA, queryB])` for independent queries — don't await them sequentially
 
 ## Gotchas
 
@@ -75,6 +76,19 @@ __tests__/api/             # API route tests only — no component tests
 - **Tailwind v4**: no `tailwind.config.ts`; styles configured via `@import "tailwindcss"` + `@theme inline` in `globals.css`; PostCSS uses `@tailwindcss/postcss`
 - **NextAuth v4** (not v5/Auth.js): different API surface — `getServerSession(authOptions)` not `auth()`
 - **`prisma generate` before build**: wired into `npm run build` and `postinstall`; run after every schema change
+- **`prisma generate` after `migrate dev`**: `migrate dev` triggers generate internally but the TS language server may stay stale — run `npx prisma generate` explicitly to refresh types in an active session
+- **JSON numeric validation**: use `typeof body.amount !== "number"` not `=== undefined || isNaN()` — `Number("")` and `Number(false)` both equal `0` and bypass the naive check
+
+## Skills
+
+Invoke the matching skill before touching each area — never write code in these areas without it:
+
+| Area | Skill | Trigger |
+|---|---|---|
+| `prisma/schema.prisma` | `prisma-schema-change` | Any model, field, or relation change |
+| `app/api/.../[id]/route.ts` | `next-dynamic-route` | GET one, PATCH, DELETE by ID |
+| `app/api/.../route.ts` (no ID) | `next-collection-route` | GET all, POST create |
+| Any `.tsx` component or page | `ui-style` | All frontend work |
 
 ## Workflow
 
