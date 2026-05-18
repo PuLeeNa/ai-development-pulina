@@ -19,31 +19,17 @@
     "commit-commands@claude-plugins-official": true,
     "playwright@claude-plugins-official": true
   },
-  "permissions": {
-    "allow": [
-      "Bash(npm:*)",
-      "Bash(npx:*)",
-      "Bash(git add*)",
-      "Bash(git commit*)",
-      "Bash(git push*)",
-      "Bash(git checkout*)",
-      "Bash(git worktree*)",
-      "Bash(git status*)",
-      "Bash(git log*)",
-      "Bash(git branch*)",
-      "Bash(git pull*)",
-      "Bash(git diff*)"
-    ]
-  },
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash(git commit*)",
+        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "cd c:/projects/claudeproject/ai-development-pulina && npx tsc --noEmit && npm test",
-            "timeout": 60000,
+            "if": "Bash(git commit*)",
+            "command": "npx tsc --noEmit && npm test",
+            "shell": "bash",
+            "timeout": 60,
             "statusMessage": "Running TypeScript + tests before commit..."
           }
         ]
