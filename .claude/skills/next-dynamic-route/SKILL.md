@@ -1,14 +1,29 @@
 ---
 name: next-dynamic-route
-description: Generate a Next.js 16 App Router dynamic route handler and its Jest test file for routes with an ID param (e.g. /api/bids/[id], /api/listings/[id]). Covers GET one, PATCH, DELETE patterns. Use this skill when adding a resource detail endpoint or writing tests for a dynamic route. Triggers on: "add a route for [id]", "create a dynamic endpoint", "add GET/PATCH/DELETE for single", "add /api/X/[id] route".
+description: Generates a Next.js 16 App Router dynamic route handler and Jest test file for endpoints with an ID param (e.g. /api/bids/[id], /api/listings/[id]). Handles GET one, PATCH, DELETE with the exact project conventions — awaited Promise params, lazy Prisma imports, 401→404→403 order. Use this skill whenever adding a detail, update, or delete endpoint for a resource, or writing tests for a dynamic route. Also invoke when a Jira story requires fetching, updating, or deleting a single record by ID. Always use before writing any [id] route file to avoid the Promise params gotcha.
 ---
 
 # Next.js Dynamic Route Generator
 
-Dynamic routes have an ID param. File goes at `app/api/<resource>/[id]/route.ts`.
-Test file goes at `__tests__/api/<resource>/<resource>-id.test.ts`.
+Dynamic routes have an ID param. File: `app/api/<resource>/[id]/route.ts`. Test: `__tests__/api/<resource>/<resource>-id.test.ts`.
 
-**Critical:** `params` is a `Promise` in Next.js 16 — always `await params` before destructuring.
+**Critical:** `params` is a `Promise` in Next.js 16 — always `await params` before destructuring. This is a breaking change from earlier versions; forgetting it causes a runtime error.
+
+## Step 0 — Story verification
+
+**Resolve the story ID, then confirm with the user.**
+
+1. **Check current session first.** If a Jira story ID is already present in the conversation context or active task, use that as the candidate.
+
+2. **Fall back to branch name.** If no ID is in session, run `git branch --show-current` and parse the ticket from the branch name (format: `feature/AIEX-NNN-...`; use the first ticket number found).
+
+3. **Always confirm with the user.** Whether the ID came from session or branch, ask:
+
+   > "I have you working on `<AIEX-NNN>` — is that right?"
+
+   If they say yes → proceed. If they correct it → use their answer.
+
+4. **Fetch the Jira story.** Call `mcp__claude_ai_Atlassian__getJiraIssue` with cloudId `fb779f96-2443-4319-b441-63d66a63bbaf` to get the summary, description, and acceptance criteria. Use this to understand which HTTP methods are needed, what fields to return, and any ownership/permission rules — fill in `<model>`, `<resource>`, and field names without asking the user to repeat what Jira already says.
 
 ## Route template
 
@@ -79,7 +94,7 @@ export async function DELETE(
 **Rules:**
 - Always `await import(...)` inside handlers — never top-level
 - Always `await params` — it is a Promise in Next.js 16
-- Order: 401 → 404 → 403 — never check ownership before existence
+- Order checks: 401 → 404 → 403 — never check ownership before existence
 
 ## Test template
 
@@ -106,7 +121,6 @@ const mockGetServerSession = getServerSession as jest.MockedFunction<typeof getS
 
 // params is a Promise — always mock as Promise.resolve
 const params = { params: Promise.resolve({ id: "test-id" }) }
-
 const mockItem = { id: "test-id", userId: "u1" }
 
 describe("GET /api/<resource>/[id]", () => {
@@ -137,16 +151,6 @@ describe("PATCH /api/<resource>/[id]", () => {
       headers: { "Content-Type": "application/json" },
     }), params)
     expect(res.status).toBe(401)
-  })
-
-  it("returns 404 when not found", async () => {
-    mockGetServerSession.mockResolvedValue({ user: { id: "u1" } } as any)
-    mockFindUnique.mockResolvedValue(null)
-    const res = await PATCH(new NextRequest("http://localhost/api/<resource>/test-id", {
-      method: "PATCH", body: JSON.stringify({ field: "x" }),
-      headers: { "Content-Type": "application/json" },
-    }), params)
-    expect(res.status).toBe(404)
   })
 
   it("returns 403 when user does not own the record", async () => {
@@ -182,4 +186,25 @@ describe("DELETE /api/<resource>/[id]", () => {
 
 ```bash
 npm run test && npm run build
+```
+
+## Final step — Session summary
+
+After completing all steps, output a summary so the current session has a clear record:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ next-dynamic-route complete
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Story:    AIEX-NNN — <story summary>
+
+Files created:
+  app/api/<resource>/[id]/route.ts
+  __tests__/api/<resource>/<resource>-id.test.ts
+
+Tests:    npm run test — <passed / N failures>
+Build:    npm run build — <clean / errors>
+
+Next:     <suggested next step, e.g. "Run /verify-story-subtask to close completed subtasks">
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```

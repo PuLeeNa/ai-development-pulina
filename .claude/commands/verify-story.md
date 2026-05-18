@@ -9,11 +9,27 @@ Fetch the Jira story linked to this branch, then check whether all changes on th
 
 ## Steps
 
-### Step 1 — Identify the ticket
+### Step 1 — Identify and verify the ticket
 
-Run `git branch --show-current` and parse the Jira ticket key from the branch name. Format is `feature/AIEX-NNN-description` — extract `AIEX-NNN`.
+1. **Try branch name first.** Run `git branch --show-current` and parse the ticket from the branch name (format: `feature/AIEX-NNN-...`; use the first ticket number found).
 
-If no ticket key can be parsed from the branch name, stop and tell the user: `Cannot determine Jira ticket from branch name. Expected format: feature/AIEX-NNN-description`.
+   - If the branch matches the expected format → confirm with the user:
+
+     > "I have you working on `<AIEX-NNN>` — is that right?"
+
+     If yes → proceed. If they correct it → use their answer.
+
+2. **If the branch doesn't match the expected format**, check session context — if a story ID is already present in the conversation or active task, use that as the candidate and confirm:
+
+   > "I have you working on `<AIEX-NNN>` — is that right?"
+
+   If yes → proceed. If they correct it → use their answer.
+
+3. **If neither branch nor session has a usable ID**, ask the user directly:
+
+   > "I couldn't determine the Jira ticket from your branch (`<branch>`) or session. Which story are you working on? (e.g. AIEX-728)"
+
+   Use their answer → proceed.
 
 ### Step 2 — Fetch the Jira story
 
