@@ -4,12 +4,16 @@ import { NextRequest } from "next/server"
 
 const mockFindUnique = jest.fn()
 const mockUpdate = jest.fn()
+const mockCount = jest.fn()
 
 jest.mock("@/lib/prisma", () => ({
   prisma: {
     listing: {
       findUnique: mockFindUnique,
       update: mockUpdate,
+    },
+    bid: {
+      count: mockCount,
     },
   },
 }))
@@ -37,7 +41,10 @@ const mockListing = {
 }
 
 describe("GET /api/listings/[id]", () => {
-  beforeEach(() => jest.clearAllMocks())
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockCount.mockResolvedValue(0)
+  })
 
   it("returns 404 when listing not found", async () => {
     mockFindUnique.mockResolvedValue(null)
@@ -57,7 +64,10 @@ describe("GET /api/listings/[id]", () => {
 })
 
 describe("DELETE /api/listings/[id]", () => {
-  beforeEach(() => jest.clearAllMocks())
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockCount.mockResolvedValue(0)
+  })
 
   it("returns 401 when not authenticated", async () => {
     mockGetServerSession.mockResolvedValue(null)
@@ -84,5 +94,15 @@ describe("DELETE /api/listings/[id]", () => {
       where: { id: "listing-1" },
       data: { cancelled: true },
     })
+  })
+
+  it("returns 403 when seller tries to cancel listing with bids", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { id: "u1" } } as any)
+    mockFindUnique.mockResolvedValue(mockListing)
+    mockCount.mockResolvedValue(2)
+    const res = await DELETE(new NextRequest("http://localhost/api/listings/listing-1"), params)
+    expect(res.status).toBe(403)
+    const data = await res.json()
+    expect(data.error).toBe("Cannot cancel a listing with bids")
   })
 })
