@@ -42,7 +42,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd c:/projects/claudeproject/ai-development-pulina && npx tsc --noEmit --pretty false 2>&1 | head -5 && npm test -- --passWithNoTests 2>&1 | tail -5",
+            "command": "cd c:/projects/claudeproject/ai-development-pulina && npx tsc --noEmit && npm test",
             "timeout": 60000,
             "statusMessage": "Running TypeScript + tests before commit..."
           }

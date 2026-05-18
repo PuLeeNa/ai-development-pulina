@@ -12,26 +12,25 @@ Receives a Product Owner feature request via $ARGUMENTS and walks through the co
 ---
 
 ## Step 1 — Clarification
-Ask 2–3 targeted questions about the request. One at a time. Focus on: who does what, edge cases, what is explicitly out of scope.
+Ask 2–3 targeted questions about $ARGUMENTS. One at a time. Focus on: who does what, edge cases, what is explicitly out of scope.
 
 ---
 
 ## Step 2 — User Stories
 Write user stories: "As a [role], I want [goal] so that [benefit]"
-Include Acceptance Criteria for each. Present to the user. Do not proceed until confirmed.
+Include Acceptance Criteria for each. Present to user. Do not proceed until confirmed.
 
 ---
 
 ## Step 3 — Jira
-Once stories are confirmed, use `/embla-core:jira` to create them in the AIEX project.
-Read `.claude/config/jira-board.json` for project key and transition IDs.
+Once stories are confirmed, use `/embla-core:jira` to create them in AIEX.
 Print the created ticket keys.
 
 ---
 
 ## Step 4 — Brainstorm
-Invoke `Skill(skill: "superpowers:brainstorming")` on the first story.
-Get implementation approach approved before writing any code.
+Use `/superpowers:brainstorming` on the first story.
+Get implementation approach approved before any code.
 
 ---
 
@@ -46,30 +45,24 @@ Read `.claude/lib/core/patterns.md` before writing any code.
 
 ---
 
-## Step 7 — QA
-Run `/qa`. Fix any failures. Manual smoke test on the changed flow.
+## Step 7 — PR & Review
+Use `/superpowers:finishing-a-development-branch`.
+Run `/code-review:code-review` on the PR.
 
 ---
 
-## Step 8 — PR & Review
-Invoke `Skill(skill: "superpowers:finishing-a-development-branch")`.
-Run `/commit` then open PR.
-
----
-
-## Step 9 — Deploy & Done
+## Step 8 — Deploy & Done
 Verify Vercel auto-deployed. Transition Jira ticket to Done.
-Read `.claude/config/jira-board.json` for the Done transition ID.
 
 ---
 
-## Step 10 — Tell the user
+## Step 9 — Tell the user
 Print:
 "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ /new-feature complete
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Feature: $ARGUMENTS
-Tickets: [list AIEX-NNN keys]
+Tickets: [AIEX-NNN list]
 Branch:  [branch name]
-PR:      [URL or 'not yet created']
+PR:      [URL]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
