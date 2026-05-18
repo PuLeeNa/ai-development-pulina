@@ -10,14 +10,17 @@ export async function GET(
   const { prisma } = await import("@/lib/prisma")
   const listing = await prisma.listing.findUnique({
     where: { id },
-    include: { seller: { select: { username: true } } },
+    include: {
+      seller: { select: { username: true } },
+      _count: { select: { bids: true } },
+    },
   })
 
   if (!listing)
     return NextResponse.json({ error: "Not found" }, { status: 404 })
 
-  const bidCount = await prisma.bid.count({ where: { listingId: id } })
-  return NextResponse.json({ ...listing, bidCount })
+  const { _count, ...rest } = listing
+  return NextResponse.json({ ...rest, bidCount: _count.bids })
 }
 
 export async function DELETE(

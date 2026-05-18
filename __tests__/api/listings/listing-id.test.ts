@@ -41,10 +41,7 @@ const mockListing = {
 }
 
 describe("GET /api/listings/[id]", () => {
-  beforeEach(() => {
-    jest.clearAllMocks()
-    mockCount.mockResolvedValue(0)
-  })
+  beforeEach(() => jest.clearAllMocks())
 
   it("returns 404 when listing not found", async () => {
     mockFindUnique.mockResolvedValue(null)
@@ -53,13 +50,23 @@ describe("GET /api/listings/[id]", () => {
   })
 
   it("returns listing with seller.username and bidCount 0", async () => {
-    mockFindUnique.mockResolvedValue(mockListing)
+    mockFindUnique.mockResolvedValue({ ...mockListing, _count: { bids: 0 } })
     const res = await GET(new NextRequest("http://localhost/api/listings/listing-1"), params)
     expect(res.status).toBe(200)
     const data = await res.json()
     expect(data.title).toBe("Air Max")
     expect(data.seller.username).toBe("seller1")
     expect(data.bidCount).toBe(0)
+    expect(data._count).toBeUndefined()
+  })
+
+  it("returns correct bidCount when bids exist", async () => {
+    mockFindUnique.mockResolvedValue({ ...mockListing, _count: { bids: 3 } })
+    const res = await GET(new NextRequest("http://localhost/api/listings/listing-1"), params)
+    expect(res.status).toBe(200)
+    const data = await res.json()
+    expect(data.bidCount).toBe(3)
+    expect(data._count).toBeUndefined()
   })
 })
 
