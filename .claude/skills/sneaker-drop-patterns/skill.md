@@ -1,35 +1,40 @@
 ---
 name: sneaker-drop:patterns
-description: Use when implementing any feature for the Sneaker Drop project. Enforces the dynamic import pattern, async params, design system, and sealed bid rules specific to this codebase.
+description: Apply when implementing any feature in the Sneaker Drop project to enforce dynamic imports, async params, design system rules, and sealed bid constraints.
+type: flexible
 ---
 
 # Sneaker Drop — Project Coding Patterns
 
-Apply ALL of these automatically. Never ask permission to follow them.
+Apply all of these automatically when writing code for this project.
 
 ## API Routes
-1. Use `await import("@/lib/prisma")` inside the function body — never top-level static import
-2. Use `await import("@/lib/auth")` for authOptions — same reason (Jest mock hoisting)
-3. `params` is `Promise<{ id: string }>` — always destructure with `const { id } = await params`
-4. Auth guard: `if (!session?.user?.id) return 401`
-5. Never expose bid amounts — only `bidderCount` (integer) and `myBid` (viewer's own only)
+1. **Dynamic imports** inside the handler body — never top-level:
+   ```ts
+   const { prisma } = await import("@/lib/prisma")
+   const { authOptions } = await import("@/lib/auth")
+   ```
+2. **Async params** — `params: Promise<{ id: string }>`, then `const { id } = await params`
+3. **Auth guard** — `if (!session?.user?.id) return 401`
+4. **Seal rule** — never expose bid amounts except `myBid` (viewer's own only)
 
 ## Server Component Pages
-1. `export const dynamic = "force-dynamic"` on all pages that query Prisma
-2. Query Prisma directly — do NOT fetch from own API routes (loopback fails on Vercel)
-3. Pass `closingTime.toISOString()` (not Date object) to `CountdownTimer`
+1. Add `export const dynamic = "force-dynamic"`
+2. Query Prisma directly — do not fetch from own API routes
+3. Pass `closingTime.toISOString()` to `CountdownTimer` (not a Date object)
 
 ## Client Components
-1. Loading states: `if (status === "loading") return <spinner />` — never `return null` (blank screen)
-2. After form submit that changes server data: call `router.refresh()` to re-run Server Component
-3. BidForm uses `key={myBid ?? "new"}` to force remount after refresh
+1. Loading state: show a spinner — never `return null` (blank screen)
+2. After mutating data: call `router.refresh()` to re-run the Server Component
+3. When passing `myBid` as `defaultValue`: use `key={myBid ?? "new"}` on the form component to force remount after refresh
 
-## Tests
-1. Mock prisma: `jest.mock("@/lib/prisma", () => ({ prisma: { model: { method: jest.fn() } } }))`
-2. Mock next-auth: `jest.mock("next-auth", () => ({ getServerSession: jest.fn() }))`
-3. Params in tests: `{ params: Promise.resolve({ id: "test-id" }) }`
-4. Run `npm test` after every implementation step
+## Unit Tests
+1. Mock prisma with `jest.mock("@/lib/prisma", () => ({ prisma: { model: { method: jest.fn() } } }))`
+2. Mock next-auth with `jest.mock("next-auth", () => ({ getServerSession: jest.fn() }))`
+3. Route params in tests: `{ params: Promise.resolve({ id: "test-id" }) }`
 
-## Design System
-See `ui-implementer` agent for full class reference.
-Auth pages: no Navbar. App pages: include `<Navbar />`.
+## Design System Quick Reference
+- Auth pages: no Navbar, centered card on `bg-zinc-950`
+- App pages: `<Navbar />` at top
+- Primary CTA: `bg-amber-400 text-black`
+- Inputs: `bg-zinc-800 border-zinc-700 text-white focus:ring-amber-400`
