@@ -13,6 +13,7 @@ model User {
   passwordHash String
   createdAt    DateTime  @default(now())
   listings     Listing[]
+  bids         Bid[]
 }
 
 model Listing {
@@ -26,4 +27,19 @@ model Listing {
   closingTime   DateTime
   cancelled     Boolean  @default(false)
   createdAt     DateTime @default(now())
+  bids          Bid[]
+}
+
+model Bid {
+  id        String   @id @default(cuid())
+  listingId String
+  bidderId  String
+  amount    Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  listing   Listing  @relation(fields: [listingId], references: [id])
+  bidder    User     @relation(fields: [bidderId], references: [id])
+
+  @@unique([listingId, bidderId])
 }
