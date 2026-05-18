@@ -36,6 +36,28 @@
     ]
   },
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File \"c:/projects/claudeproject/ai-development-pulina/.claude/hooks/session-banner.ps1\"",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File \"c:/projects/claudeproject/ai-development-pulina/.claude/hooks/inject-aiex-context.ps1\"",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash(git commit*)",

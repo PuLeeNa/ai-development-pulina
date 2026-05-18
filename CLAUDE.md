@@ -67,6 +67,37 @@ const listings = await prisma.listing.findMany(...)
 - Branch format: `feature/AIEX-NNN-short-description`
 - Commit format: `feat(AIEX-NNN): description`
 
+## Two-Tree Rule (Worktrees)
+The main checkout stays on `master`. Each story gets its own isolated sibling worktree.
+
+```
+# Start a story — creates worktree automatically
+/start-aiex AIEX-NNN
+
+# Worktree lives at:
+c:/projects/claudeproject/ai-development-pulina-AIEX-NNN
+
+# Open a NEW Claude Code window in that folder for isolated work
+# The main checkout is never touched during story work
+```
+
+Commands:
+- `/start-aiex AIEX-NNN` — create worktree + branch + copy .env
+- `/aiex-cleanup` — prune merged/stale worktrees
+
+## Definition of Done
+- [ ] `npm test` — all tests pass
+- [ ] `npx tsc --noEmit` — zero TypeScript errors
+- [ ] PR opened with summary + test plan
+- [ ] Jira ticket transitioned to Done
+- [ ] Vercel deployment verified
+
+## Known Footguns
+- **Prisma not regenerated** — after schema changes run `npx prisma generate`, else `prisma.listing` is undefined at runtime
+- **Wrong DATABASE_URL** — Vercel needs pooler URL (port 6543), local `.env` uses direct (port 5432)
+- **Server Component fetch loops** — never `fetch("/api/...")` inside a Server Component; query Prisma directly
+- **params not awaited** — Next.js 16 params are `Promise<{id}>`, always `const { id } = await params`
+
 ## Git Remotes (dual push)
 `git push` updates BOTH Bitbucket and GitHub simultaneously.
 
