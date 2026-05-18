@@ -75,3 +75,17 @@ __tests__/api/             # API route tests only — no component tests
 - **Tailwind v4**: no `tailwind.config.ts`; styles configured via `@import "tailwindcss"` + `@theme inline` in `globals.css`; PostCSS uses `@tailwindcss/postcss`
 - **NextAuth v4** (not v5/Auth.js): different API surface — `getServerSession(authOptions)` not `auth()`
 - **`prisma generate` before build**: wired into `npm run build` and `postinstall`; run after every schema change
+
+## Workflow
+
+All feature work follows a 9-phase AI-assisted workflow. Invoke the matching skill at each phase:
+
+1. **Idea → Spec**: `/superpowers:brainstorming` — clarify requirements, compare approaches, produce a spec doc
+2. **Spec → Backlog**: `/embla-core:jira spec <path>` — parse spec, review, auto-create Epics/Stories/Tasks in Jira
+3. **Story kickoff**: `/embla-core:develop` — fetch ticket, move to In Progress, create branch (linked to Jira)
+4. **Implementation plan**: `/superpowers:writing-plans` — step-by-step plan with exact code + expected output per task
+5. **Build**: `/superpowers:subagent-driven-development` — fresh subagent per task; spec + quality review gates before advancing
+6. **Version control**: branches `feature/AIEX-NNN-description`; commits `feat(AIEX-NNN): description`; pushes both Bitbucket + GitHub
+7. **CI**: every push runs install → prisma generate → tests; must pass before merge
+8. **PR wrap-up**: `/superpowers:finishing-a-development-branch` — verify tests, generate PR description, open PR
+9. **Deploy**: Vercel auto-deploys previews on every branch push; production on merge to master
