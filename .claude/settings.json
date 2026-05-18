@@ -18,5 +18,44 @@
     "claude-md-management@claude-plugins-official": true,
     "commit-commands@claude-plugins-official": true,
     "playwright@claude-plugins-official": true
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash(git commit*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '✅ Committed. Run: npm test' "
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd c:/projects/claudeproject/ai-development-pulina && git status --short && echo '--- run npm test before pushing ---'"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(git push*)",
+      "Bash(git checkout*)",
+      "Bash(git worktree*)",
+      "Bash(git status*)",
+      "Bash(git log*)",
+      "Bash(git branch*)",
+      "Bash(git pull*)",
+      "Bash(git diff*)"
+    ]
   }
 }
