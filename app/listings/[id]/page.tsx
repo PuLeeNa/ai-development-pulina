@@ -6,6 +6,7 @@ import { authOptions } from "@/lib/auth"
 import Navbar from "@/app/components/Navbar"
 import CountdownTimer from "@/app/components/CountdownTimer"
 import CancelButton from "@/app/components/CancelButton"
+import BidForm from "@/app/components/BidForm"
 import { prisma } from "@/lib/prisma"
 
 export const dynamic = "force-dynamic"
@@ -27,10 +28,16 @@ export default async function ListingDetailPage({
 
   if (!listing || listing.cancelled) redirect("/listings")
 
+  const existingBid = session?.user?.id
+    ? await prisma.bid.findUnique({
+        where: { listingId_bidderId: { listingId: id, bidderId: session.user.id } },
+        select: { amount: true },
+      })
+    : null
+
   const isSeller = session?.user?.id === listing.sellerId
   const isOpen = new Date(listing.closingTime) > new Date()
-  // bidCount is 0 until Bid model is added in AIEX-728
-  const bidCount = 0
+  const bidCount = await prisma.bid.count({ where: { listingId: id } })
   const canCancel = isSeller && bidCount === 0 && isOpen
 
   return (
@@ -71,6 +78,15 @@ export default async function ListingDetailPage({
               <div className="pt-2 border-t border-zinc-800">
                 <p className="text-zinc-500 text-xs mb-3">No bids placed yet — you can still cancel.</p>
                 <CancelButton listingId={listing.id} />
+              </div>
+            )}
+            {!isSeller && isOpen && session && (
+              <div className="pt-4 border-t border-zinc-800">
+                <BidForm
+                  listingId={listing.id}
+                  startingPrice={listing.startingPrice}
+                  existingBid={existingBid?.amount}
+                />
               </div>
             )}
           </div>
