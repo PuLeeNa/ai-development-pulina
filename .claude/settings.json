@@ -34,40 +34,5 @@
       "Bash(git pull*)",
       "Bash(git diff*)"
     ]
-  },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"c:/projects/claudeproject/ai-development-pulina/.claude/hooks/pre/commit-message-check.sh\"",
-            "timeout": 5000
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"c:/projects/claudeproject/ai-development-pulina/.claude/hooks/pre/secret-scan.sh\"",
-            "timeout": 5000
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"c:/projects/claudeproject/ai-development-pulina/.claude/hooks/post/notify-done.sh\"",
-            "timeout": 5000
-          }
-        ]
-      }
-    ]
   }
 }
