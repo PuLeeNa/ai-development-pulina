@@ -9,11 +9,27 @@ Fetch all subtasks under the current branch's Jira story, assess whether the bra
 
 ## Steps
 
-### Step 1 — Identify the story ticket
+### Step 1 — Identify and verify the story ticket
 
-Run `git branch --show-current` and parse the Jira ticket key from the branch name. Format is `feature/AIEX-NNN-description` — extract `AIEX-NNN`.
+1. **Try branch name first.** Run `git branch --show-current` and parse the ticket from the branch name (format: `feature/AIEX-NNN-...`; use the first ticket number found).
 
-If no key can be parsed, stop: `Cannot determine Jira ticket from branch name. Expected format: feature/AIEX-NNN-description`.
+   - If the branch matches the expected format → confirm with the user:
+
+     > "I have you working on `<AIEX-NNN>` — is that right?"
+
+     If yes → proceed. If they correct it → use their answer.
+
+2. **If the branch doesn't match the expected format**, check session context — if a story ID is already present in the conversation or active task, use that as the candidate and confirm:
+
+   > "I have you working on `<AIEX-NNN>` — is that right?"
+
+   If yes → proceed. If they correct it → use their answer.
+
+3. **If neither branch nor session has a usable ID**, ask the user directly:
+
+   > "I couldn't determine the Jira ticket from your branch (`<branch>`) or session. Which story are you working on? (e.g. AIEX-728)"
+
+   Use their answer → proceed.
 
 ### Step 2 — Fetch the story and its subtasks
 
@@ -47,7 +63,25 @@ For each subtask, read its summary and description, then compare against the com
 
 For subtasks that are already `Done` in Jira, skip assessment and mark them as already closed.
 
-### Step 5 — Transition covered subtasks to Done
+### Step 5 — Confirm before transitioning
+
+Before making any Jira changes, show the assessment and ask for approval:
+
+```
+The following subtasks are covered and ready to close:
+  ✅ AIEX-NNN — <subtask summary>
+  ✅ AIEX-NNN — <subtask summary>
+
+Transition these to Done in Jira? (yes / no)
+```
+
+If the user says **no** — stop here. Print the full report from Step 7 but make no Jira changes.
+
+If the user says **yes** — proceed to Step 6.
+
+If there are no covered subtasks — skip this step and go straight to Step 7.
+
+### Step 6 — Transition covered subtasks to Done
 
 For each subtask assessed as **covered** and not already Done:
 
@@ -58,7 +92,7 @@ For each subtask assessed as **covered** and not already Done:
 
 Do not transition subtasks that are partially covered or not covered.
 
-### Step 6 — Check if all subtasks are now Done
+### Step 7 — Check if all subtasks are now Done
 
 After transitioning covered subtasks, check whether every subtask under the story is now in `Done` status (including ones that were already Done before this run).
 
@@ -70,7 +104,7 @@ If **all subtasks are Done**:
 
 If **not all subtasks are Done**, leave the story as-is.
 
-### Step 7 — Report
+### Step 8 — Report
 
 Print the status summary first:
 

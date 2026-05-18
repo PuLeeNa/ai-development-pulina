@@ -1,12 +1,27 @@
 ---
 name: next-collection-route
-description: Generate a Next.js 16 App Router collection route handler and its Jest test file for routes with no ID param (e.g. /api/bids, /api/listings). Covers GET all and POST create patterns. Use this skill when adding a new resource endpoint or writing tests for a collection route. Triggers on: "add a route for", "create a collection endpoint", "add GET/POST for", "create the bids API", "add /api/X route".
+description: Generates a Next.js 16 App Router collection route handler and Jest test file for endpoints with no ID param (e.g. /api/bids, /api/listings). Handles GET all and POST create with the exact project conventions — lazy Prisma imports, NextAuth v4 session check, explicit field selection. Use this skill whenever adding a new resource collection endpoint, writing a POST create route, or generating tests for a collection route. Also invoke when a Jira story requires a new API resource that doesn't have an ID in the URL. Always use before writing any route file to avoid convention drift.
 ---
 
 # Next.js Collection Route Generator
 
-Collection routes have no ID param. File goes at `app/api/<resource>/route.ts`.
-Test file goes at `__tests__/api/<resource>/<resource>.test.ts`.
+Collection routes have no ID param. File: `app/api/<resource>/route.ts`. Test: `__tests__/api/<resource>/<resource>.test.ts`.
+
+## Step 0 — Story verification
+
+**Resolve the story ID, then confirm with the user.**
+
+1. **Check current session first.** If a Jira story ID is already present in the conversation context or active task, use that as the candidate.
+
+2. **Fall back to branch name.** If no ID is in session, run `git branch --show-current` and parse the ticket from the branch name (format: `feature/AIEX-NNN-...`; use the first ticket number found).
+
+3. **Always confirm with the user.** Whether the ID came from session or branch, ask:
+
+   > "I have you working on `<AIEX-NNN>` — is that right?"
+
+   If they say yes → proceed. If they correct it → use their answer.
+
+4. **Fetch the Jira story.** Call `mcp__claude_ai_Atlassian__getJiraIssue` with cloudId `fb779f96-2443-4319-b441-63d66a63bbaf` to get the summary, description, and acceptance criteria. Use this to understand the resource, required fields, and validation rules — fill in `<model>`, `<resource>`, and field names in the templates below without asking the user to repeat what Jira already says.
 
 ## Route template
 
@@ -124,4 +139,25 @@ describe("POST /api/<resource>", () => {
 
 ```bash
 npm run test && npm run build
+```
+
+## Final step — Session summary
+
+After completing all steps, output a summary so the current session has a clear record:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ next-collection-route complete
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Story:    AIEX-NNN — <story summary>
+
+Files created:
+  app/api/<resource>/route.ts
+  __tests__/api/<resource>/<resource>.test.ts
+
+Tests:    npm run test — <passed / N failures>
+Build:    npm run build — <clean / errors>
+
+Next:     <suggested next step, e.g. "Run /next-dynamic-route for GET/PATCH/DELETE /api/<resource>/[id]">
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
