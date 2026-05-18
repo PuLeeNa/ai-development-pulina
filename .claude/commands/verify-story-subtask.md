@@ -47,7 +47,25 @@ For each subtask, read its summary and description, then compare against the com
 
 For subtasks that are already `Done` in Jira, skip assessment and mark them as already closed.
 
-### Step 5 — Transition covered subtasks to Done
+### Step 5 — Confirm before transitioning
+
+Before making any Jira changes, show the assessment and ask for approval:
+
+```
+The following subtasks are covered and ready to close:
+  ✅ AIEX-NNN — <subtask summary>
+  ✅ AIEX-NNN — <subtask summary>
+
+Transition these to Done in Jira? (yes / no)
+```
+
+If the user says **no** — stop here. Print the full report from Step 7 but make no Jira changes.
+
+If the user says **yes** — proceed to Step 6.
+
+If there are no covered subtasks — skip this step and go straight to Step 7.
+
+### Step 6 — Transition covered subtasks to Done
 
 For each subtask assessed as **covered** and not already Done:
 
@@ -58,7 +76,7 @@ For each subtask assessed as **covered** and not already Done:
 
 Do not transition subtasks that are partially covered or not covered.
 
-### Step 6 — Check if all subtasks are now Done
+### Step 7 — Check if all subtasks are now Done
 
 After transitioning covered subtasks, check whether every subtask under the story is now in `Done` status (including ones that were already Done before this run).
 
@@ -70,7 +88,7 @@ If **all subtasks are Done**:
 
 If **not all subtasks are Done**, leave the story as-is.
 
-### Step 7 — Report
+### Step 8 — Report
 
 Print the status summary first:
 
