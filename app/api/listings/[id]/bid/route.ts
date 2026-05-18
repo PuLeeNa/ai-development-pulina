@@ -16,7 +16,7 @@ export async function POST(
   const body = await req.json()
   const amount = Number(body.amount)
 
-  if (body.amount === undefined || body.amount === null || isNaN(amount))
+  if (typeof body.amount !== "number" || isNaN(amount))
     return NextResponse.json({ error: "Invalid amount" }, { status: 400 })
 
   const { prisma } = await import("@/lib/prisma")

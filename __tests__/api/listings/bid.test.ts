@@ -65,6 +65,22 @@ describe("POST /api/listings/[id]/bid", () => {
     expect(data.error).toBe("Invalid amount")
   })
 
+  it("returns 400 when amount is an empty string", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { id: "bidder-1" } } as any)
+    const res = await POST(makeRequest({ amount: "" }), params)
+    expect(res.status).toBe(400)
+    const data = await res.json()
+    expect(data.error).toBe("Invalid amount")
+  })
+
+  it("returns 400 when amount is a boolean", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { id: "bidder-1" } } as any)
+    const res = await POST(makeRequest({ amount: false }), params)
+    expect(res.status).toBe(400)
+    const data = await res.json()
+    expect(data.error).toBe("Invalid amount")
+  })
+
   it("returns 404 when listing not found", async () => {
     mockGetServerSession.mockResolvedValue({ user: { id: "bidder-1" } } as any)
     mockFindUnique.mockResolvedValue(null)
