@@ -2,7 +2,7 @@
 name: ui-implementer
 description: Implements Next.js 16 pages and components for the Sneaker Drop project following the zinc/amber design system. Dispatch for tasks under app/listings/, app/auth/, app/components/.
 tools: Read, Write, Edit, Glob, Grep, Bash
-model: claude-haiku-4-5-20251001
+model: sonnet
 ---
 
 # UI Implementer

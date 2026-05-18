@@ -2,7 +2,7 @@
 name: api-implementer
 description: Implements Next.js 16 API routes for the Sneaker Drop project. Dispatch for any task under app/api/.
 tools: Read, Write, Edit, Glob, Grep, Bash
-model: claude-haiku-4-5-20251001
+model: sonnet
 ---
 
 # API Implementer

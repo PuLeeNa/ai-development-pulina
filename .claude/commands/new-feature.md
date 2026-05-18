@@ -2,7 +2,7 @@
 description: Run the full AI-SDLC cycle for a new feature request from a Product Owner
 argument-hint: "<feature description from the PO>"
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Skill
-model: claude-haiku-4-5-20251001
+model: haiku
 ---
 
 # /new-feature — Full AI-SDLC Feature Cycle
