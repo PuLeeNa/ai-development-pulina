@@ -1,0 +1,28 @@
+{
+  "cloud_id": "fb779f96-2443-4319-b441-63d66a63bbaf",
+  "site_url": "https://emblaftdev.atlassian.net",
+  "project_key": "AIEX",
+  "issue_types": {
+    "epic": "Epic",
+    "story": "Story",
+    "task": "Task",
+    "subtask": "Subtask",
+    "bug": "Bug"
+  },
+  "fields": {
+    "acceptance_criteria": "customfield_10035",
+    "sprint": "customfield_10020"
+  },
+  "assignee": {
+    "email": "pulinaw@embla.asia",
+    "account_id": "712020:45fa6089-a012-4d58-a955-caa37d030f9d",
+    "display_name": "pulina"
+  },
+  "transitions": {
+    "To Do": "11",
+    "In Progress": "21",
+    "Done": "31"
+  },
+  "commit_convention": "feat(AIEX-NNN): description",
+  "branch_convention": "feature/AIEX-NNN-short-description"
+}

@@ -19,29 +19,6 @@
     "commit-commands@claude-plugins-official": true,
     "playwright@claude-plugins-official": true
   },
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Bash(git commit*)",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '✅ Committed. Run: npm test' "
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "cd c:/projects/claudeproject/ai-development-pulina && git status --short && echo '--- run npm test before pushing ---'"
-          }
-        ]
-      }
-    ]
-  },
   "permissions": {
     "allow": [
       "Bash(npm:*)",
@@ -56,6 +33,41 @@
       "Bash(git branch*)",
       "Bash(git pull*)",
       "Bash(git diff*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"c:/projects/claudeproject/ai-development-pulina/.claude/hooks/pre/commit-message-check.sh\"",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"c:/projects/claudeproject/ai-development-pulina/.claude/hooks/pre/secret-scan.sh\"",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"c:/projects/claudeproject/ai-development-pulina/.claude/hooks/post/notify-done.sh\"",
+            "timeout": 5000
+          }
+        ]
+      }
     ]
   }
 }
