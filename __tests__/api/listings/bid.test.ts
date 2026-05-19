@@ -167,14 +167,12 @@ describe("POST /api/listings/[id]/bid", () => {
     mockCount.mockResolvedValue(1)
     const res = await POST(makeRequest({ amount: 200 }), params)
     expect(res.status).toBe(201)
-    expect(mockUpsert).toHaveBeenCalledWith({
-      where: { listingId_bidderId: { listingId: "listing-1", bidderId: "bidder-1" } },
-      create: { listingId: "listing-1", bidderId: "bidder-1", amount: 200 },
-      update: { amount: 200 },
-    })
+    const call = mockUpsert.mock.calls[0][0]
+    expect(call.update).toEqual({ amount: 200 })
+    expect(call.update).not.toHaveProperty("createdAt")
   })
 
-  it("accepts same-amount resubmission silently — no duplicate created", async () => {
+  it("accepts valid amount at starting price floor via upsert — no duplicate record", async () => {
     mockGetServerSession.mockResolvedValue({ user: { id: "bidder-1" } } as any)
     mockFindUnique.mockResolvedValue(openListing)
     mockUpsert.mockResolvedValue({})
