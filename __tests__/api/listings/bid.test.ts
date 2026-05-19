@@ -159,4 +159,26 @@ describe("POST /api/listings/[id]/bid", () => {
     const res = await POST(makeRequest({ amount: 100 }), params)
     expect(res.status).toBe(201)
   })
+
+  it("updates existing bid — upsert update clause contains only amount", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { id: "bidder-1" } } as any)
+    mockFindUnique.mockResolvedValue(openListing)
+    mockUpsert.mockResolvedValue({})
+    mockCount.mockResolvedValue(1)
+    const res = await POST(makeRequest({ amount: 200 }), params)
+    expect(res.status).toBe(201)
+    const call = mockUpsert.mock.calls[0][0]
+    expect(call.update).toEqual({ amount: 200 })
+    expect(call.update).not.toHaveProperty("createdAt")
+  })
+
+  it("accepts valid amount at starting price floor via upsert — no duplicate record", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { id: "bidder-1" } } as any)
+    mockFindUnique.mockResolvedValue(openListing)
+    mockUpsert.mockResolvedValue({})
+    mockCount.mockResolvedValue(1)
+    const res = await POST(makeRequest({ amount: 100 }), params)
+    expect(res.status).toBe(201)
+    expect(mockUpsert).toHaveBeenCalledTimes(1)
+  })
 })
