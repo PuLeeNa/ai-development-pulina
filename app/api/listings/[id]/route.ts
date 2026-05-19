@@ -8,19 +8,50 @@ export async function GET(
 ) {
   const { id } = await params
   const { prisma } = await import("@/lib/prisma")
-  const listing = await prisma.listing.findUnique({
-    where: { id },
-    include: {
-      seller: { select: { username: true } },
-      _count: { select: { bids: true } },
-    },
-  })
+  const { authOptions } = await import("@/lib/auth")
+
+  const [listing, session] = await Promise.all([
+    prisma.listing.findUnique({
+      where: { id },
+      include: { seller: { select: { username: true } } },
+    }),
+    getServerSession(authOptions),
+  ])
 
   if (!listing)
     return NextResponse.json({ error: "Not found" }, { status: 404 })
 
-  const { _count, ...rest } = listing
-  return NextResponse.json({ ...rest, bidCount: _count.bids })
+  const isOpen = listing.closingTime > new Date()
+  const isEligibleBidder =
+    isOpen &&
+    !listing.cancelled &&
+    !!session?.user?.id &&
+    session.user.id !== listing.sellerId
+
+  const userId = session?.user?.id as string
+
+  const [bidderCount, ownBid] = await Promise.all([
+    prisma.bid.count({ where: { listingId: id } }),
+    isEligibleBidder
+      ? prisma.bid.findUnique({
+          where: { listingId_bidderId: { listingId: id, bidderId: userId } },
+          select: { amount: true },
+        })
+      : Promise.resolve(null),
+  ])
+
+  return NextResponse.json({
+    id: listing.id,
+    title: listing.title,
+    description: listing.description,
+    photoUrl: listing.photoUrl,
+    startingPrice: listing.startingPrice,
+    closingTime: listing.closingTime,
+    cancelled: listing.cancelled,
+    seller: listing.seller,
+    bidderCount,
+    ...(ownBid ? { myBid: ownBid.amount } : {}),
+  })
 }
 
 export async function DELETE(
