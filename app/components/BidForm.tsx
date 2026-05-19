@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 
 interface BidFormProps {
@@ -14,6 +14,12 @@ export default function BidForm({ listingId, startingPrice, existingBid }: BidFo
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (!success) return
+    const id = setTimeout(() => setSuccess(null), 2000)
+    return () => clearTimeout(id)
+  }, [success])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -32,7 +38,6 @@ export default function BidForm({ listingId, startingPrice, existingBid }: BidFo
         return
       }
       setSuccess(existingBid ? "Bid updated!" : "Bid placed!")
-      setTimeout(() => setSuccess(null), 2000)
       router.refresh()
     } catch {
       setError("Something went wrong")
