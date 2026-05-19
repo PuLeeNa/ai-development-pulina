@@ -53,7 +53,6 @@ describe("GET /api/listings/[id]", () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockGetServerSession.mockResolvedValue(null)
-    mockBidFindFirst.mockResolvedValue(null)
   })
 
   it("returns 404 when listing not found", async () => {
