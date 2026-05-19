@@ -30,12 +30,19 @@ export async function GET(
 
   const userId = session?.user?.id as string
 
-  const [bidderCount, ownBid] = await Promise.all([
+  const [bidderCount, ownBid, winnerBid] = await Promise.all([
     prisma.bid.count({ where: { listingId: id } }),
     isEligibleBidder
       ? prisma.bid.findUnique({
           where: { listingId_bidderId: { listingId: id, bidderId: userId } },
           select: { amount: true },
+        })
+      : Promise.resolve(null),
+    !isOpen
+      ? prisma.bid.findFirst({
+          where: { listingId: id },
+          orderBy: [{ amount: "desc" }, { createdAt: "asc" }],
+          include: { bidder: { select: { username: true } } },
         })
       : Promise.resolve(null),
   ])
@@ -51,6 +58,14 @@ export async function GET(
     seller: listing.seller,
     bidderCount,
     ...(ownBid ? { myBid: ownBid.amount } : {}),
+    ...(!isOpen
+      ? {
+          closed: true,
+          winner: winnerBid
+            ? { winnerUsername: winnerBid.bidder.username, winningAmount: winnerBid.amount }
+            : null,
+        }
+      : {}),
   })
 }
 
