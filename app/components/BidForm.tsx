@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 
 interface BidFormProps {
@@ -12,11 +12,19 @@ export default function BidForm({ listingId, startingPrice, existingBid }: BidFo
   const router = useRouter()
   const [amount, setAmount] = useState(existingBid?.toString() ?? "")
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (!success) return
+    const id = setTimeout(() => setSuccess(null), 2000)
+    return () => clearTimeout(id)
+  }, [success])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+    setSuccess(null)
     setLoading(true)
     try {
       const res = await fetch(`/api/listings/${listingId}/bid`, {
@@ -29,6 +37,7 @@ export default function BidForm({ listingId, startingPrice, existingBid }: BidFo
         setError(data.error ?? "Something went wrong")
         return
       }
+      setSuccess(existingBid ? "Bid updated!" : "Bid placed!")
       router.refresh()
     } catch {
       setError("Something went wrong")
@@ -66,6 +75,9 @@ export default function BidForm({ listingId, startingPrice, existingBid }: BidFo
       </div>
       {error && (
         <p role="alert" className="text-red-400 bg-red-400/10 rounded-lg px-4 py-3 text-sm">{error}</p>
+      )}
+      {success && (
+        <p role="status" className="text-green-400 bg-green-400/10 rounded-lg px-4 py-3 text-sm">{success}</p>
       )}
     </form>
   )
