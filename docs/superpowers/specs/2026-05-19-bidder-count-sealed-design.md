@@ -19,7 +19,7 @@ The existing `GET /api/listings/[id]` returns a `bidCount` field with no session
 
 - **Rename** `bidCount` → `bidderCount` in the response (breaking rename; tests updated).
 - **Add session check** inside the handler using `await import("@/lib/auth")` (consistent with DELETE handler convention).
-- **Conditional `myBid`**: included only when all three conditions hold:
+- **Conditional `myBid`**: included only when all four conditions hold:
   1. Listing is open (`closingTime > now`)
   2. Caller is authenticated
   3. Caller is not the seller
@@ -55,7 +55,7 @@ The existing `GET /api/listings/[id]` returns a `bidCount` field with no session
 
 ## Page: `app/listings/[id]/page.tsx`
 
-The page is a server component that queries Prisma directly (no API call). Two changes:
+The page is a server component that queries Prisma directly (no API call). Three changes:
 
 1. **Rename** local variable `bidCount` → `bidderCount`.
 2. **Display bidder count** in the info row (alongside Starting price / Listed by) when the listing is open.
