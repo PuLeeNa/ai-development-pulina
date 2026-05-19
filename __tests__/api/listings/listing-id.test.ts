@@ -5,6 +5,7 @@ import { NextRequest } from "next/server"
 const mockFindUnique = jest.fn()
 const mockUpdate = jest.fn()
 const mockCount = jest.fn()
+const mockBidFindUnique = jest.fn()
 
 jest.mock("@/lib/prisma", () => ({
   prisma: {
@@ -14,6 +15,7 @@ jest.mock("@/lib/prisma", () => ({
     },
     bid: {
       count: mockCount,
+      findUnique: mockBidFindUnique,
     },
   },
 }))
@@ -41,7 +43,10 @@ const mockListing = {
 }
 
 describe("GET /api/listings/[id]", () => {
-  beforeEach(() => jest.clearAllMocks())
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockGetServerSession.mockResolvedValue(null)
+  })
 
   it("returns 404 when listing not found", async () => {
     mockFindUnique.mockResolvedValue(null)
@@ -49,30 +54,80 @@ describe("GET /api/listings/[id]", () => {
     expect(res.status).toBe(404)
   })
 
-  it("returns listing with seller.username and bidCount 0", async () => {
-    mockFindUnique.mockResolvedValue({ ...mockListing, _count: { bids: 0 } })
+  it("returns listing with seller.username and bidderCount 0", async () => {
+    mockFindUnique.mockResolvedValue(mockListing)
+    mockCount.mockResolvedValue(0)
     const res = await GET(new NextRequest("http://localhost/api/listings/listing-1"), params)
     expect(res.status).toBe(200)
     const data = await res.json()
     expect(data.title).toBe("Air Max")
     expect(data.seller.username).toBe("seller1")
-    expect(data.bidCount).toBe(0)
+    expect(data.bidderCount).toBe(0)
     expect(data._count).toBeUndefined()
   })
 
-  it("returns correct bidCount when bids exist", async () => {
-    mockFindUnique.mockResolvedValue({ ...mockListing, _count: { bids: 3 } })
+  it("returns correct bidderCount when bids exist", async () => {
+    mockFindUnique.mockResolvedValue(mockListing)
+    mockCount.mockResolvedValue(3)
     const res = await GET(new NextRequest("http://localhost/api/listings/listing-1"), params)
     expect(res.status).toBe(200)
     const data = await res.json()
-    expect(data.bidCount).toBe(3)
+    expect(data.bidderCount).toBe(3)
     expect(data._count).toBeUndefined()
+  })
+
+  it("unauthenticated caller gets bidderCount only, no myBid", async () => {
+    mockGetServerSession.mockResolvedValue(null)
+    mockFindUnique.mockResolvedValue(mockListing)
+    mockCount.mockResolvedValue(2)
+    const res = await GET(new NextRequest("http://localhost/api/listings/listing-1"), params)
+    expect(res.status).toBe(200)
+    const data = await res.json()
+    expect(data.bidderCount).toBe(2)
+    expect(data.myBid).toBeUndefined()
+  })
+
+  it("authenticated seller gets bidderCount only, no myBid", async () => {
+    // mockListing.sellerId === "u1" — same id as session user
+    mockGetServerSession.mockResolvedValue({ user: { id: "u1" } } as any)
+    mockFindUnique.mockResolvedValue(mockListing)
+    mockCount.mockResolvedValue(3)
+    const res = await GET(new NextRequest("http://localhost/api/listings/listing-1"), params)
+    expect(res.status).toBe(200)
+    const data = await res.json()
+    expect(data.bidderCount).toBe(3)
+    expect(data.myBid).toBeUndefined()
+  })
+
+  it("authenticated bidder with existing bid gets bidderCount and myBid", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { id: "bidder-1" } } as any)
+    mockFindUnique.mockResolvedValue(mockListing)
+    mockCount.mockResolvedValue(1)
+    mockBidFindUnique.mockResolvedValue({ amount: 250 })
+    const res = await GET(new NextRequest("http://localhost/api/listings/listing-1"), params)
+    expect(res.status).toBe(200)
+    const data = await res.json()
+    expect(data.bidderCount).toBe(1)
+    expect(data.myBid).toBe(250)
+  })
+
+  it("authenticated bidder with no bid gets bidderCount only, no myBid", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { id: "bidder-1" } } as any)
+    mockFindUnique.mockResolvedValue(mockListing)
+    mockCount.mockResolvedValue(0)
+    mockBidFindUnique.mockResolvedValue(null)
+    const res = await GET(new NextRequest("http://localhost/api/listings/listing-1"), params)
+    expect(res.status).toBe(200)
+    const data = await res.json()
+    expect(data.bidderCount).toBe(0)
+    expect(data.myBid).toBeUndefined()
   })
 })
 
 describe("DELETE /api/listings/[id]", () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockGetServerSession.mockResolvedValue(null)
     mockCount.mockResolvedValue(0)
   })
 
