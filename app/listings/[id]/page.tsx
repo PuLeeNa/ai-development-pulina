@@ -32,7 +32,7 @@ export default async function ListingDetailPage({
   const isOpen = new Date(listing.closingTime) > new Date()
 
   const [existingBid, bidderCount, winnerBid] = await Promise.all([
-    isOpen && session?.user?.id
+    session?.user?.id && session.user.id !== listing.sellerId
       ? prisma.bid.findUnique({
           where: { listingId_bidderId: { listingId: id, bidderId: session.user.id } },
           select: { amount: true },
@@ -116,16 +116,34 @@ export default async function ListingDetailPage({
             {!isOpen && (
               <div className="pt-4 border-t border-zinc-800">
                 {winnerBid ? (
-                  <>
-                    <p className="text-zinc-500 text-xs uppercase tracking-wide mb-3">Auction Result</p>
-                    <p className="text-white text-sm">
-                      Winner:{" "}
-                      <span className="text-amber-400 font-bold">@{winnerBid.bidder.username}</span>
-                    </p>
-                    <p className="text-amber-400 text-2xl font-bold mt-1">
-                      ${winnerBid.amount.toLocaleString()}
-                    </p>
-                  </>
+                  winnerBid.bidderId === session?.user?.id ? (
+                    <>
+                      <p className="text-zinc-500 text-xs uppercase tracking-wide mb-3">Auction Result</p>
+                      <p className="text-amber-400 font-bold text-lg">You won!</p>
+                      <p className="text-amber-400 text-2xl font-bold mt-1">
+                        ${winnerBid.amount.toLocaleString()}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-zinc-500 text-xs uppercase tracking-wide mb-3">Auction Result</p>
+                      <p className="text-white text-sm">
+                        Winner:{" "}
+                        <span className="text-amber-400 font-bold">@{winnerBid.bidder.username}</span>
+                      </p>
+                      <p className="text-amber-400 text-2xl font-bold mt-1">
+                        ${winnerBid.amount.toLocaleString()}
+                      </p>
+                      {existingBid && (
+                        <p className="text-zinc-400 text-sm mt-3">
+                          You bid:{" "}
+                          <span className="text-zinc-300 font-semibold">
+                            ${existingBid.amount.toLocaleString()}
+                          </span>
+                        </p>
+                      )}
+                    </>
+                  )
                 ) : (
                   <p className="text-zinc-500 text-sm">No bids were placed.</p>
                 )}
