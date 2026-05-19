@@ -6,6 +6,7 @@ const mockFindUnique = jest.fn()
 const mockUpdate = jest.fn()
 const mockCount = jest.fn()
 const mockBidFindUnique = jest.fn()
+const mockBidFindFirst = jest.fn()
 
 jest.mock("@/lib/prisma", () => ({
   prisma: {
@@ -16,6 +17,7 @@ jest.mock("@/lib/prisma", () => ({
     bid: {
       count: mockCount,
       findUnique: mockBidFindUnique,
+      findFirst: mockBidFindFirst,
     },
   },
 }))
@@ -40,6 +42,11 @@ const mockListing = {
   sellerId: "u1",
   seller: { username: "seller1" },
   createdAt: new Date(),
+}
+
+const mockClosedListing = {
+  ...mockListing,
+  closingTime: new Date("2000-01-01"),
 }
 
 describe("GET /api/listings/[id]", () => {
@@ -121,6 +128,64 @@ describe("GET /api/listings/[id]", () => {
     const data = await res.json()
     expect(data.bidderCount).toBe(0)
     expect(data.myBid).toBeUndefined()
+  })
+
+  it("closed listing with winner returns closed:true and winner info", async () => {
+    mockFindUnique.mockResolvedValue(mockClosedListing)
+    mockCount.mockResolvedValue(2)
+    mockBidFindFirst.mockResolvedValue({
+      amount: 350,
+      bidder: { username: "alice" },
+    })
+    const res = await GET(new NextRequest("http://localhost/api/listings/listing-1"), params)
+    expect(res.status).toBe(200)
+    const data = await res.json()
+    expect(data.closed).toBe(true)
+    expect(data.winner).toEqual({ winnerUsername: "alice", winningAmount: 350 })
+    expect(mockBidFindFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        include: { bidder: { select: { username: true } } },
+      })
+    )
+  })
+
+  it("closed listing with no bids returns closed:true and winner:null", async () => {
+    mockFindUnique.mockResolvedValue(mockClosedListing)
+    mockCount.mockResolvedValue(0)
+    mockBidFindFirst.mockResolvedValue(null)
+    const res = await GET(new NextRequest("http://localhost/api/listings/listing-1"), params)
+    expect(res.status).toBe(200)
+    const data = await res.json()
+    expect(data.closed).toBe(true)
+    expect(data.winner).toBeNull()
+    expect(mockBidFindFirst).toHaveBeenCalled()
+  })
+
+  it("open listing does not include closed or winner fields", async () => {
+    mockFindUnique.mockResolvedValue(mockListing)
+    mockCount.mockResolvedValue(1)
+    const res = await GET(new NextRequest("http://localhost/api/listings/listing-1"), params)
+    expect(res.status).toBe(200)
+    const data = await res.json()
+    expect(data.closed).toBeUndefined()
+    expect(data.winner).toBeUndefined()
+    expect(mockBidFindFirst).not.toHaveBeenCalled()
+  })
+
+  it("closed listing winner query uses correct orderBy for tie-break", async () => {
+    mockFindUnique.mockResolvedValue(mockClosedListing)
+    mockCount.mockResolvedValue(1)
+    mockBidFindFirst.mockResolvedValue({
+      amount: 200,
+      bidder: { username: "bob" },
+    })
+    const res = await GET(new NextRequest("http://localhost/api/listings/listing-1"), params)
+    expect(res.status).toBe(200)
+    expect(mockBidFindFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: [{ amount: "desc" }, { createdAt: "asc" }],
+      })
+    )
   })
 })
 

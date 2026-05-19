@@ -31,14 +31,21 @@ export default async function ListingDetailPage({
   const isSeller = session?.user?.id === listing.sellerId
   const isOpen = new Date(listing.closingTime) > new Date()
 
-  const [existingBid, bidderCount] = await Promise.all([
-    session?.user?.id
+  const [existingBid, bidderCount, winnerBid] = await Promise.all([
+    isOpen && session?.user?.id
       ? prisma.bid.findUnique({
           where: { listingId_bidderId: { listingId: id, bidderId: session.user.id } },
           select: { amount: true },
         })
       : Promise.resolve(null),
     prisma.bid.count({ where: { listingId: id } }),
+    !isOpen
+      ? prisma.bid.findFirst({
+          where: { listingId: id },
+          orderBy: [{ amount: "desc" }, { createdAt: "asc" }],
+          include: { bidder: { select: { username: true } } },
+        })
+      : Promise.resolve(null),
   ])
 
   const canCancel = isSeller && bidderCount === 0 && isOpen
@@ -104,6 +111,24 @@ export default async function ListingDetailPage({
                   startingPrice={listing.startingPrice}
                   existingBid={existingBid?.amount}
                 />
+              </div>
+            )}
+            {!isOpen && (
+              <div className="pt-4 border-t border-zinc-800">
+                {winnerBid ? (
+                  <>
+                    <p className="text-zinc-500 text-xs uppercase tracking-wide mb-3">Auction Result</p>
+                    <p className="text-white text-sm">
+                      Winner:{" "}
+                      <span className="text-amber-400 font-bold">@{winnerBid.bidder.username}</span>
+                    </p>
+                    <p className="text-amber-400 text-2xl font-bold mt-1">
+                      ${winnerBid.amount.toLocaleString()}
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-zinc-500 text-sm">No bids were placed.</p>
+                )}
               </div>
             )}
           </div>
