@@ -28,11 +28,14 @@ export async function GET(
     !!session?.user?.id &&
     session.user.id !== listing.sellerId
 
+  const isPastBidder =
+    !isOpen && !!session?.user?.id && session.user.id !== listing.sellerId
+
   const userId = session?.user?.id as string
 
   const [bidderCount, ownBid, winnerBid] = await Promise.all([
     prisma.bid.count({ where: { listingId: id } }),
-    isEligibleBidder
+    isEligibleBidder || isPastBidder
       ? prisma.bid.findUnique({
           where: { listingId_bidderId: { listingId: id, bidderId: userId } },
           select: { amount: true },

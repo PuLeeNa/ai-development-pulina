@@ -187,6 +187,82 @@ describe("GET /api/listings/[id]", () => {
       })
     )
   })
+
+  it("closed listing + authenticated past bidder returns myBid alongside winner", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { id: "bidder-1" } } as any)
+    mockFindUnique.mockResolvedValue(mockClosedListing)
+    mockCount.mockResolvedValue(1)
+    mockBidFindFirst.mockResolvedValue({
+      amount: 350,
+      bidder: { username: "alice" },
+    })
+    mockBidFindUnique.mockResolvedValue({ amount: 200 })
+    const res = await GET(new NextRequest("http://localhost/api/listings/listing-1"), params)
+    expect(res.status).toBe(200)
+    const data = await res.json()
+    expect(data.closed).toBe(true)
+    expect(data.myBid).toBe(200)
+    expect(data.winner).toEqual({ winnerUsername: "alice", winningAmount: 350 })
+    expect(mockBidFindUnique).toHaveBeenCalledWith({
+      where: { listingId_bidderId: { listingId: "listing-1", bidderId: "bidder-1" } },
+      select: { amount: true },
+    })
+  })
+
+  it("closed listing + authenticated winner returns myBid equal to winningAmount", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { id: "bidder-1" } } as any)
+    mockFindUnique.mockResolvedValue(mockClosedListing)
+    mockCount.mockResolvedValue(1)
+    mockBidFindFirst.mockResolvedValue({
+      amount: 350,
+      bidder: { username: "bob" },
+    })
+    mockBidFindUnique.mockResolvedValue({ amount: 350 })
+    const res = await GET(new NextRequest("http://localhost/api/listings/listing-1"), params)
+    expect(res.status).toBe(200)
+    const data = await res.json()
+    expect(data.closed).toBe(true)
+    expect(data.myBid).toBe(350)
+    expect(data.winner).toEqual({ winnerUsername: "bob", winningAmount: 350 })
+    expect(data.myBid).toBe(data.winner.winningAmount)
+    expect(mockBidFindUnique).toHaveBeenCalledWith({
+      where: { listingId_bidderId: { listingId: "listing-1", bidderId: "bidder-1" } },
+      select: { amount: true },
+    })
+  })
+
+  it("closed listing + unauthenticated does not return myBid", async () => {
+    mockGetServerSession.mockResolvedValue(null)
+    mockFindUnique.mockResolvedValue(mockClosedListing)
+    mockCount.mockResolvedValue(1)
+    mockBidFindFirst.mockResolvedValue({
+      amount: 350,
+      bidder: { username: "alice" },
+    })
+    const res = await GET(new NextRequest("http://localhost/api/listings/listing-1"), params)
+    expect(res.status).toBe(200)
+    const data = await res.json()
+    expect(data.myBid).toBeUndefined()
+    expect(mockBidFindFirst).toHaveBeenCalled()
+    expect(mockBidFindUnique).not.toHaveBeenCalled()
+  })
+
+  it("closed listing + seller session does not return myBid", async () => {
+    // mockClosedListing.sellerId === "u1" — same as mockListing
+    mockGetServerSession.mockResolvedValue({ user: { id: "u1" } } as any)
+    mockFindUnique.mockResolvedValue(mockClosedListing)
+    mockCount.mockResolvedValue(1)
+    mockBidFindFirst.mockResolvedValue({
+      amount: 350,
+      bidder: { username: "alice" },
+    })
+    const res = await GET(new NextRequest("http://localhost/api/listings/listing-1"), params)
+    expect(res.status).toBe(200)
+    const data = await res.json()
+    expect(data.myBid).toBeUndefined()
+    expect(mockBidFindFirst).toHaveBeenCalled()
+    expect(mockBidFindUnique).not.toHaveBeenCalled()
+  })
 })
 
 describe("DELETE /api/listings/[id]", () => {
