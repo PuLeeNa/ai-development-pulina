@@ -31,7 +31,7 @@ export default async function ListingDetailPage({
   const isSeller = session?.user?.id === listing.sellerId
   const isOpen = new Date(listing.closingTime) > new Date()
 
-  const [existingBid, bidCount] = await Promise.all([
+  const [existingBid, bidderCount] = await Promise.all([
     session?.user?.id
       ? prisma.bid.findUnique({
           where: { listingId_bidderId: { listingId: id, bidderId: session.user.id } },
@@ -41,7 +41,7 @@ export default async function ListingDetailPage({
     prisma.bid.count({ where: { listingId: id } }),
   ])
 
-  const canCancel = isSeller && bidCount === 0 && isOpen
+  const canCancel = isSeller && bidderCount === 0 && isOpen
 
   return (
     <div className="min-h-screen bg-zinc-950">
@@ -76,6 +76,12 @@ export default async function ListingDetailPage({
                 <p className="text-zinc-500 text-xs uppercase tracking-wide">Listed by</p>
                 <p className="text-white font-medium">@{listing.seller.username}</p>
               </div>
+              {isOpen && (
+                <div>
+                  <p className="text-zinc-500 text-xs uppercase tracking-wide">Bidders</p>
+                  <p className="text-white font-medium">{bidderCount}</p>
+                </div>
+              )}
             </div>
             {canCancel && (
               <div className="pt-2 border-t border-zinc-800">
@@ -85,6 +91,14 @@ export default async function ListingDetailPage({
             )}
             {!isSeller && isOpen && session && (
               <div className="pt-4 border-t border-zinc-800">
+                {existingBid && (
+                  <p className="text-zinc-400 text-sm mb-3">
+                    Your current bid:{" "}
+                    <span className="text-amber-400 font-semibold">
+                      ${existingBid.amount.toLocaleString()}
+                    </span>
+                  </p>
+                )}
                 <BidForm
                   listingId={listing.id}
                   startingPrice={listing.startingPrice}
