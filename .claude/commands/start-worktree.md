@@ -3,7 +3,7 @@ description: Start a new story in an isolated git worktree — picks from remain
 allowed-tools: Bash, mcp__claude_ai_Atlassian__searchJiraIssuesUsingJql
 ---
 
-# /start-worktree — Create a worktree and start development
+# /start-worktree
 
 ## Step 1 — Fetch remaining stories
 
@@ -12,49 +12,50 @@ Call `mcp__claude_ai_Atlassian__searchJiraIssuesUsingJql` with:
 - jql: `project = AIEX AND assignee = currentUser() AND issuetype = Story AND statusCategory != Done ORDER BY created ASC`
 - fields: `["summary", "status", "key"]`
 
-Present results as a numbered list:
-
-```
-Remaining stories assigned to you:
-
-  1. AIEX-732  In Progress  As a bidder, I want to update my bid before the listing closes
-  2. AIEX-734  In Progress  As a bidder, I want to see only the bidder count on an open listing
-
-Which story? (enter number or key)
-```
+Present as a numbered list with key, status, and summary. Ask: `Which story? (enter number or key)`
 
 If no stories remain, print: `No remaining AIEX stories assigned to you.` and stop.
 
 ## Step 2 — Derive branch name and confirm
 
-From the selected story's summary, derive a **4–5 word slug**:
-- Strip filler ("As a user, I want to", "so that I can", etc.)
-- Pick the 4–5 most descriptive words from what remains
-- Lowercase, joined with `-`, no special characters
+Strip filler phrases ("As a user, I want to", "so that I can", etc.) from the summary. Pick the 4–5 most descriptive remaining words — lowercase, hyphen-joined.
 
-Branch name format: `feature/{ISSUE_KEY}-{slug}`
+Branch format: `feature/{ISSUE_KEY}-{slug}`
 
-**Example:** `"As a bidder, I want to update my bid before the listing closes"` → `update-bid-before-close` → `feature/AIEX-732-update-bid-before-close`
-
-Show and confirm:
-
-> "Branch: `feature/AIEX-NNN-slug` — confirm? (yes / edit)"
+Show and confirm: `Branch: feature/AIEX-NNN-slug — confirm? (yes / edit)`
 
 If `edit` → accept revised name, re-confirm.
 
-## Step 3 — Create the worktree
+## Step 3 — Create the worktree and switch into it
 
 ```bash
 git fetch origin master
 git worktree add .worktrees/{ISSUE_KEY} -b feature/{ISSUE_KEY}-{slug} origin/master
+cd .worktrees/{ISSUE_KEY}
 ```
 
 Print: `✅ Worktree created at .worktrees/{ISSUE_KEY} on branch feature/{ISSUE_KEY}-{slug}`
 
-## Step 4 — Install dependencies and verify baseline
+You are now inside the worktree. All `git commit` commands from here run against `feature/{ISSUE_KEY}-{slug}`. Do not navigate back to the repo root to commit — that would land changes on the wrong branch. Step 4 is the only exception.
+
+## Step 4 — Ensure jest config excludes worktrees
+
+Check that root `jest.config.ts` has `"/.worktrees/"` in `testPathIgnorePatterns`. If missing, add it:
+
+```typescript
+testPathIgnorePatterns: ["/node_modules/", "/.worktrees/"],
+```
+
+If added, commit from the **repo root** (not the worktree):
 
 ```bash
-cd .worktrees/{ISSUE_KEY}
+git -C $(git rev-parse --show-toplevel) add jest.config.ts
+git -C $(git rev-parse --show-toplevel) commit -m "chore: exclude worktrees from root jest test discovery"
+```
+
+## Step 5 — Install dependencies and verify baseline
+
+```bash
 npm install
 npm test --no-coverage
 ```
@@ -63,9 +64,9 @@ If tests fail: report failures and ask whether to proceed or investigate first.
 
 If tests pass: print `✅ Baseline: N tests passing — ready to develop`
 
-## Step 5 — Start development
+## Step 6 — Start development
 
-Invoke the `embla-core:develop` skill with the selected story key. It will fetch the story, assign it, transition to In Progress, and guide brainstorming. When it reaches the branch creation step, the branch already exists — confirm checkout of the existing branch.
+Invoke the `embla-core:develop` skill with the selected story key. When it reaches the branch creation step, the branch already exists — confirm checkout of the existing branch.
 
 ---
 
