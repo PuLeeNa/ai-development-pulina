@@ -263,6 +263,19 @@ describe("GET /api/listings/[id]", () => {
     expect(mockBidFindFirst).toHaveBeenCalled()
     expect(mockBidFindUnique).not.toHaveBeenCalled()
   })
+
+  it("closed listing + authenticated non-bidder does not return myBid", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { id: "spectator-1" } } as any)
+    mockFindUnique.mockResolvedValue(mockClosedListing)
+    mockCount.mockResolvedValue(1)
+    mockBidFindFirst.mockResolvedValue({ amount: 350, bidder: { username: "alice" } })
+    mockBidFindUnique.mockResolvedValue(null) // spectator never bid
+    const res = await GET(new NextRequest("http://localhost/api/listings/listing-1"), params)
+    expect(res.status).toBe(200)
+    const data = await res.json()
+    expect(data.myBid).toBeUndefined()
+    expect(mockBidFindUnique).toHaveBeenCalled() // isPastBidder fires, but returns null
+  })
 })
 
 describe("DELETE /api/listings/[id]", () => {
